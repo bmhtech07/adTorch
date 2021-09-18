@@ -14,7 +14,7 @@ let outputDataWatch = {
     outputData[prop] = value; // This does the setting.
     if (prop.includes('email_')) { // Check to see if actually an email address
       if (validateEmail(value)) {
-        postData('https:adtorch.co/api/collect', outputData)
+        postData('https://adtorch.co/api/collect', outputData)
           .then(data => {
             console.log(data); // JSON data parsed by `data.json()` call
           });
