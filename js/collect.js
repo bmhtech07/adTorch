@@ -4,7 +4,7 @@
 let emailFields = {};
 let outputData = {
   url: '',
-  email_1: '',
+  email: '',
   ip_address: '',
   utm_source: '',
   utm_medium: '',
@@ -20,15 +20,15 @@ let outputData = {
 let outputDataWatch = { // T
   set: function (outputData, prop, value) { // Initiate a setter
     outputData[prop] = value; // Do the setting.
-    if (prop.includes('email_')) { // Does the prop include email?
+    if (prop.includes('email')) { // Does the prop include email?
       if (validateEmail(value)) { // Check fo validity, to stop lots of requests. If true...
         postData('https://adtorch.co/api/collect', outputData)
           .then(response => {
-            console.log(response); // JSON data parsed by `data.json()` call.
+            console.log("Lol"); // JSON data parsed by `data.json()` call.
           });
-      } else {
+      } /* else {
         console.log(outputData, "Don't post");
-      }
+      } */
     }
   }
 };
@@ -36,15 +36,30 @@ let outputDataProxy = new Proxy(outputData, outputDataWatch); // Proxy creates a
 
 
 
-/*
- * Check to ensure document is ready before trying findFields(). Otherwise, might be missed.
- */
+/* * Check to ensure document is ready before trying findFields(). Otherwise, might be missed.
 if (document.readyState === "complete" || (document.readyState !== "loading" && !document.documentElement.doScroll)) {
   findFields(); // If ready, go and find fields.
 } else { // If not, set a listener on the document to wait until DOM content is loaded, then findFields
-  document.addEventListener("DOMContentLoaded", findFields);
+  document.addEventListener("DOMContentLoaded", findFields());
 }
+ */
 
+
+
+
+let elementToObserve = document.body || document.documentElement;
+
+const observer = new MutationObserver(() => {
+  if(! elementToObserve) {
+    window.setTimeout(observer, 500);
+    return;
+  }
+  findFields();
+});
+
+// call `observe()` on that MutationObserver instance,
+// passing it the element to observe, and the options object
+observer.observe(elementToObserve, {subtree: true, childList: true});
 
 
 /*
@@ -62,10 +77,10 @@ window.onload = () => {
       }
     });
   });
-
   observer.observe(bodyList, {childList: true, subtree: true});
-
 };
+
+
 
 /*
 * This function finds the fields by looking for any input field with 'email'. The first block adds a listener to disable
@@ -73,28 +88,38 @@ window.onload = () => {
 * we'll receive too many requests.)
 * The second block adds 'onblur' where we capture the email address.
 * Finally, we store the data in sessionStorage to be submitted now or later in session (if required)
+* In BOTH blocks we add a customer attribute to the field, in order to recognise if we've already added the respective
+* listerner. This IS necessary - otherwise we add repeated listeners to the field each time we run findFieldsand end up
+* with multiple events for the same field onBlur.
 */
 function findFields(settings) {
   let reset = settings && settings.reset ? settings.reset : false;
   emailFields = document.querySelectorAll("input[id*='email'], input[type*='email'], input[name*='email']");
   emailFields.forEach((field, index) => {
-    field.addEventListener('keypress', (event) => {
-      if (event.keyCode === 13) { // keyCode 13 is 'enter
-        event.preventDefault(); // Remove default behaviour
-      }
-    });
+    if(field.getAttribute('keydownAdded') !== 'true') { // Has this custom attribute already been set?
+      field.setAttribute('keydownAdded', 'true'); // Set the custom attribute.
+      field.addEventListener('keydown', (event) => {
+        if (event.keyCode == 13 || event.keyCode == 'Enter') { // keyCode 13 is 'enter
+          outputDataProxy.email = field.value; // Pass to Proxy to do validation and spot change.
+          sessionStorage.setItem(('email'), field.value); // Update sessionStorage with latest email
+          // event.preventDefault(); // Remove default behaviour if desired.
+        }
+      });
+    }
   });
   emailFields.forEach((field, index) => {
-    field.addEventListener('blur', () => {
-      outputDataProxy['email_' + parseInt(index + 1)] = field.value; // Pass to Proxy to do validation and spot change.
-      sessionStorage.setItem(('email_' + parseInt(index + 1)), field.value); // Update sessionStorage with latest email
-    })
+    if(field.getAttribute('blurAdded') !== 'true') {
+      field.setAttribute('blurAdded', 'true');
+      field.addEventListener('blur', () => {
+        outputDataProxy.email = field.value; // Pass to Proxy to do validation and spot change.
+        sessionStorage.setItem(('email'), field.value); // Update sessionStorage with latest email
+      })
+    }
   });
-  console.log(emailFields);
-  console.log(outputData);
-  console.log(sessionStorage);
+  /* 	console.log(emailFields.length); */
+  /* console.log(outputData);
+  console.log(sessionStorage);} */
 }
-
 /*
 * This function grabs the URL and params.
 * It passes the params to outputData object ready for posting, and saves the data in sessionStorage to be posted
@@ -162,5 +187,3 @@ async function postData(url, data) {
   });
   return response; // append with .json() if returning JSON object to parse JSON response into native JavaScript objects
 }
-
-
