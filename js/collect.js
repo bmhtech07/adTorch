@@ -36,30 +36,24 @@ let outputDataProxy = new Proxy(outputData, outputDataWatch); // Proxy creates a
 
 
 
-/* * Check to ensure document is ready before trying findFields(). Otherwise, might be missed.
-if (document.readyState === "complete" || (document.readyState !== "loading" && !document.documentElement.doScroll)) {
-  findFields(); // If ready, go and find fields.
-} else { // If not, set a listener on the document to wait until DOM content is loaded, then findFields
-  document.addEventListener("DOMContentLoaded", findFields());
-}
+/*
+* This checks to see if any new elements have been added to the DOM body. If so, it re-runs findFields.
+*
  */
-
-
-
-
-let elementToObserve = document.body || document.documentElement;
+let docBody = document.body || document.documentElement; // document.body might not be ready when on initial load
 
 const observer = new MutationObserver(() => {
-  if(! elementToObserve) {
+  if(! docBody) {
     window.setTimeout(observer, 500);
     return;
   }
   findFields();
 });
-
-// call `observe()` on that MutationObserver instance,
+// call `observe()` on that MutationObserver instance ,
 // passing it the element to observe, and the options object
-observer.observe(elementToObserve, {subtree: true, childList: true});
+observer.observe(docBody, {subtree: true, childList: true});
+
+
 
 
 /*
@@ -116,10 +110,9 @@ function findFields(settings) {
       })
     }
   });
-  /* 	console.log(emailFields.length); */
-  /* console.log(outputData);
-  console.log(sessionStorage);} */
 }
+
+
 /*
 * This function grabs the URL and params.
 * It passes the params to outputData object ready for posting, and saves the data in sessionStorage to be posted
@@ -145,23 +138,6 @@ function findParams(settings) {
   }
 }
 
-findIp();
-
-function findIp(settings) {
-  let reset = settings && settings.reset ? settings.reset : false;
-  let ipAddress = '';
-  fetch('https://api.ipify.org/?format=json')
-    .then(results => results.json())
-    .then(data => ipAddress = data.ip)
-    .catch((error) => {
-      ipAddress = null;
-    });
-  // console.log(ipAddress);
-  outputData.ip_address = ipAddress;
-  if (reset || sessionStorage.getItem('ip_address') === null) { // if storage settings reset OR we don't yet have a key with value 'ip_address'
-    sessionStorage.setItem('ip_address', ipAddress);
-  }
-}
 
 
 /*
