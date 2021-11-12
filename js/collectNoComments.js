@@ -1,6 +1,3 @@
-/*
-* Set variables.
-*/
 let emailFields = {};
 let firstNameFields = {};
 let lastNameFields = {};
@@ -22,10 +19,7 @@ let postCount = 0;
 let childListenerCount = 0;
 let parentListenerCount = 0;
 
-/*
-* This checks to see if any new elements have been added to the DOM body. If so, it re-runs findFields.
-*
-*/
+
 let docBody = document.body || document.documentElement; // document.body might not be ready when on initial load
 let timer;
 const observer = new MutationObserver(() => {
@@ -46,9 +40,7 @@ const observer = new MutationObserver(() => {
 observer.observe(docBody, {subtree: true, childList: true});
 
 
-/*
-* This is for SPAs. It re-runs findFields every time a window.location href change is detected.
-*/
+
 let oldHref = document.location.href;
 window.onload = () => {
   let bodyList = document.querySelector("body");
@@ -65,10 +57,7 @@ window.onload = () => {
 
 
 
-/*
-* This function works out where / what the script is. It looks to see if it is embedded in the outer-most element
-* in the DOM, or if it is an iFrame. And then, the functions are split accordingly to avoid duplication etc.
-*/
+
 
 function selfInquiry() {
   if (window.self == window.top) { // This script is in the outer-most element (not an iFrame)...
@@ -92,10 +81,7 @@ selfInquiry();
 
 
 
-/*
-* This is the Proxy target for outputData. Allows a 'clone' of outputData, and then allows monitoring for changes before
-* mutating outputData itself via the setter method.
-*/
+
 let outputDataWatch = { // T
   set: function (outputData, prop, value) { // Initiate a setter
     outputData[prop] = value; // Do the setting.
@@ -116,13 +102,7 @@ let outputDataWatch = { // T
 let outputDataProxy = new Proxy(outputData, outputDataWatch); // Proxy creates a copy of outputData and accesses via outputDataWatch
 
 
-/*
-* This function finds the fields we're targeting.
-* Then, for each email field we pass the value to sessionStorage to be used later in the session, if required.
-* Then, we find the field's parent form and then add the email field value to Output data on form submission.
-* We watch for form submission in two ways (for browser compatability) - onsubmit, ad via adding a 'submit' event listener.
-* In both cases, we assign relevant data to outputData by 'grabAndDispatch'.
-*/
+
 function findFields(settings) {
   let reset = settings && settings.reset ? settings.reset : false;
   emailFields = document.querySelectorAll("input[id*='email'], input[type*='email'], input[name*='email']");
@@ -149,11 +129,7 @@ function findFields(settings) {
 }
 
 
-/*
-* This function is applied to onsubmit events, and also as a listener for the 'submit' event. In either case, it does
-* the same thing: It iterates through each of the respective field values and sets output data to the value, so long
-* as there is a value in that field. Then, it submits the data to adTorch.
-*/
+
 function grabAndDispatch() {
   if (postCount === 0) {
     postCount++; // This is to ensure that we don't post the data twice (ie., onsubmit and via 'submit' listener.
@@ -180,11 +156,7 @@ function grabAndDispatch() {
 }
 
 
-/*
-* This function grabs the URL and params.
-* It passes the params to outputData object ready for posting, and saves the data in sessionStorage to be posted
-* later in session if required.
-*/
+
 findParams();
 
 function findParams(settings) {
@@ -206,9 +178,7 @@ function findParams(settings) {
   }
 }
 
-/*
-* This is a WIP. It's purpose is to alert the window that the Collect Script is embedded within THIS iframe.
- */
+
 // function signalPresence() {
 //   let scriptTag = document.getElementsByTagName('script');
 //   scriptTag = scriptTag[scriptTag.length - 1];
@@ -221,13 +191,6 @@ function findParams(settings) {
 // }
 
 
-
-/*
-* This function sets a listener to the Outer-most window (ie., We are the outer WITH an inner) that waits to ensure
-* that the iframe listener is setup and ready. Once received a message of 'Ready', it passes the data back to the source
-* (iframe).
-*/
-
 function setParentListener() {
   window.addEventListener('message', (event) => {
     if (event.data === 'adTorch listener Ready') {
@@ -236,12 +199,6 @@ function setParentListener() {
   },false);
 }
 
-
-
-/*
-* This function sets a listener to the parent window, that listens for the data being passed from the parent Window
-* via passData below. It is only set if the script exists within an iframe.
-*/
 
 function setChildListener() {
   if (childListenerCount === 0) { // Only set the listener once.
@@ -257,10 +214,7 @@ function setChildListener() {
   }
 }
 
-/*
-* This function passes data from parent to child iframe.
-* It REQUIRES MORE WORK to identify the correct child iframe to pass the data to, rather than just looking for ClickFunnels.
-*/
+
 
 // function passData() {
 //   let iframe = document.body.querySelectorAll('iframe[src*="clickfunnels"]')[0].contentWindow;
@@ -269,16 +223,12 @@ function setChildListener() {
 // }
 
 
-/*
-* Validate the email address input
-*/
+
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-/*
-* Standard FETCH setup
-*/
+
 async function postData(url, data) {
   return await fetch(url, {
     method: 'POST',

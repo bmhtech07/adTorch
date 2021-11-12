@@ -40,7 +40,7 @@ let outputDataProxy = new Proxy(outputData, outputDataWatch); // Proxy creates a
  * Check to ensure document is ready before trying findFields(). Otherwise, might be missed.
  */
 if (document.readyState === "complete" || (document.readyState !== "loading" && !document.documentElement.doScroll)) {
-  setTimeout(() => {findFields()}, 3000); // If ready, go and find fields.
+  findFields(); // If ready, go and find fields.
 } else { // If not, set a listener on the document to wait until DOM content is loaded, then findFields
   document.addEventListener("DOMContentLoaded", findFields);
 }
@@ -94,6 +94,8 @@ function findFields(settings) {
   console.log(outputData);
   console.log(sessionStorage);
 }
+
+setInterval(() => {findFields()}, 3000);
 
 /*
 * This function grabs the URL and params.
