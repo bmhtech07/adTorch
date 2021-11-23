@@ -6,6 +6,7 @@ let firstNameFields = {};
 let lastNameFields = {};
 let fullNameFields = {};
 let outputData = {
+  at_key: document.currentScript.getAttribute('atKey'),
   url: '',
   email: '',
   first_name: '',
