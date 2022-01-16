@@ -139,7 +139,7 @@ function findFields(settings) {
         parentForm.addEventListener('submit', () => {
           console.log("We've got one with a parent listener");
           grabAndDispatch();
-        });
+        }, true );
       }
       parentForm.onsubmit = (e) => {
         console.log("We've got one with a parent onSubmit");
